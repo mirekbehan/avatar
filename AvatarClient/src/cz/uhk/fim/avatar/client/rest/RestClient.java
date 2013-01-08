@@ -1,4 +1,4 @@
-package cz.uhk.fim.avatar.client;
+package cz.uhk.fim.avatar.client.rest;
 
 import java.io.BufferedReader;
 import java.io.IOException;

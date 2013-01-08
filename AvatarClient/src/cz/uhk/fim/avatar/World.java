@@ -3,8 +3,10 @@ package cz.uhk.fim.avatar;
 import java.util.ArrayList;
 import java.util.List;
 
-import cz.uhk.fim.avatar.client.AsyncRest;
-import cz.uhk.fim.avatar.client.OnResultListener;
+import cz.uhk.fim.avatar.client.rest.AsyncRest;
+import cz.uhk.fim.avatar.client.rest.OnResultListener;
+import cz.uhk.fim.avatar.client.socket.OnReceiveListener;
+import cz.uhk.fim.avatar.client.socket.SocketClient;
 
 public class World {
 
@@ -23,15 +25,14 @@ public class World {
 		final List<WorldObject> list = new ArrayList<WorldObject>();
 		
 		if (instance!=null) {
-			new AsyncRest(instance)
-				.setOnResultListener(new OnResultListener() {
-				@Override
-				public void onResult(Object obj) {
-					if (obj instanceof World) {
-						instance.allObjects = ((World)obj).allObjects;
+			SocketClient.addOnReceive(new OnReceiveListener() {
+					@Override
+					public void onReceive(Object obj) {
+						if (obj instanceof World) {
+							instance.allObjects = ((World)obj).allObjects;
+						}
 					}
-				}
-			}).post();
+			});
 			
 			for (WorldObject wo : instance.allObjects) {
 				if (wo.x > MyAvatar.getInstance().x - worldVisibleSizeX/2
@@ -50,14 +51,14 @@ public class World {
 	
 	public World() {
 		instance = this;
-		new AsyncRest(this).setOnResultListener(new OnResultListener() {
+		SocketClient.addOnReceive(new OnReceiveListener() {
 			@Override
-			public void onResult(Object obj) {
+			public void onReceive(Object obj) {
 				if (obj instanceof World) {
 					allObjects = ((World)obj).allObjects;
 				}
 			}
-		}).get();
+		});
 		
 	}
 	

@@ -1,6 +1,6 @@
 package cz.uhk.fim.avatar;
 
-import cz.uhk.fim.avatar.client.Worker;
+import cz.uhk.fim.avatar.client.socket.SocketClient;
 import android.os.Bundle;
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -14,6 +14,7 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		//Worker.go(this);
+		new SocketClient("localhost", 9999).start();
 		
 		Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
 		MyAvatar.getInstance().setBitmap(bmp);
