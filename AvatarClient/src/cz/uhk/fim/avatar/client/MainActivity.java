@@ -1,5 +1,9 @@
-package cz.uhk.fim.avatar;
+package cz.uhk.fim.avatar.client;
 
+import java.io.ByteArrayOutputStream;
+
+import cz.uhk.fim.avatar.Message;
+import cz.uhk.fim.avatar.World;
 import cz.uhk.fim.avatar.client.socket.SocketClient;
 import android.os.Bundle;
 import android.app.Activity;
@@ -14,12 +18,18 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		//Worker.go(this);
-		new SocketClient("localhost", 9999).start();
+		//new SocketClient("angelmobil.com", 9999).start();
+		new SocketClient("10.0.0.1", 9999).start();
 		
 		Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-		MyAvatar.getInstance().setBitmap(bmp);
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+		byte[] byteArray = stream.toByteArray();
 		
-		World.randomize();
+		MyAvatar avatar = new MyAvatar();
+		avatar.setImageData(byteArray);
+
+		new Model().setAvatar(avatar);
 		
 	}
 

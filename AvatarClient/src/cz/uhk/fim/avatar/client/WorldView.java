@@ -1,10 +1,9 @@
-package cz.uhk.fim.avatar;
+package cz.uhk.fim.avatar.client;
 
-import java.util.Date;
+ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import cz.uhk.fim.avatar.MyAvatar.Direction;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -16,7 +15,12 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.MeasureSpec;
+import cz.uhk.fim.avatar.Avatar;
+import cz.uhk.fim.avatar.Direction;
+import cz.uhk.fim.avatar.World;
+import cz.uhk.fim.avatar.WorldObject;
+import cz.uhk.fim.avatar.client.socket.OnReceiveListener;
+import cz.uhk.fim.avatar.client.socket.SocketClient;
 
 public class WorldView extends View {
 
@@ -40,7 +44,7 @@ public class WorldView extends View {
 			}
 		};
 		timer = new Timer();
-		timer.scheduleAtFixedRate(t, new Date(), 500);
+		timer.scheduleAtFixedRate(t, new Date(), 100);
 	}
 	
 	Paint backPaint;
@@ -99,12 +103,16 @@ public class WorldView extends View {
 			canvas.drawText("This is world", width/2, height/2, getFrontPaint());
 		} else {
 			
-			for (WorldObject wo : World.getVisibleWorldObject()) {
-				wo.onDraw(canvas);
+			if (getAvatar()!=null && getWorld()!=null) {
+				// draw all world objects
+				for (WorldObject wo : getWorld().getVisibleObjects(getAvatar().getX(), getAvatar().getY())) {
+					worldObjectView(wo, canvas);
+				}
 			}
 			
-			MyAvatar.getInstance().onDraw(canvas);
-
+			// draw avatar
+			if (getAvatar()!=null)	getAvatar().onDraw(canvas);
+				
 			// draw control bar
 			canvas.drawRect(rLeft, getControlPaint());
 			canvas.drawText("<", rLeft.centerX(), rLeft.centerY(), getControlPaint());
@@ -113,27 +121,50 @@ public class WorldView extends View {
 			canvas.drawText(">", rRight.centerX(), rRight.centerY(), getControlPaint());
 
 			canvas.drawRect(rUp, getControlPaint());
-			canvas.drawText("u", rUp.centerX(), rUp.centerY(), getControlPaint());
+			canvas.drawText("▲", rUp.centerX(), rUp.centerY(), getControlPaint());
 
 			canvas.drawRect(rDown, getControlPaint());
-			canvas.drawText("d", rDown.centerX(), rDown.centerY(), getControlPaint());
+			canvas.drawText("▼", rDown.centerX(), rDown.centerY(), getControlPaint());
 
 			canvas.drawRect(rAction, getControlPaint());
-			canvas.drawText("a", rAction.centerX(), rAction.centerY(), getControlPaint());
+			canvas.drawText("●", rAction.centerX(), rAction.centerY(), getControlPaint());
 
-			canvas.drawRect(0, 0, World.worldSizeX*World.getRatioX(),
-					World.worldSizeY*World.getRatioY(), getControlPaint());
-			
-			int x = (int) (MyAvatar.getInstance().x * World.getRatioX());
-			int y = (int) (MyAvatar.getInstance().y * World.getRatioY());
-			canvas.drawRect(x -  World.worldVisibleSizeX * World.getRatioX() / 2,
-					y -  World.worldVisibleSizeY * World.getRatioY() / 2,
-					x +  World.worldVisibleSizeX * World.getRatioX() / 2,
-					y +  World.worldVisibleSizeY * World.getRatioY() / 2,
-					getControlPaint());
+/*			if (getWorld()!=null) {
+				canvas.drawRect(0, 0, getWorld().worldSizeX*getWorld().getRatioX(),
+						getWorld().worldSizeY*getWorld().getRatioY(), getControlPaint());
+			}
+				
+			if (getAvatar()!=null && getWorld()!=null) {
+
+				// show visible world boundaries
+				int x = (int) (getAvatar().getX() * getWorld().getRatioX());
+				int y = (int) (getAvatar().getY() * getWorld().getRatioY());
+				canvas.drawRect(x -  getWorld().worldVisibleSizeX * getWorld().getRatioX() / 2,
+						y -  getWorld().worldVisibleSizeY * getWorld().getRatioY() / 2,
+						x +  getWorld().worldVisibleSizeX * getWorld().getRatioX() / 2,
+						y +  getWorld().worldVisibleSizeY * getWorld().getRatioY() / 2,
+						getControlPaint());
+
+			}
+*/			
 			
 		}
 		super.onDraw(canvas);
+	}
+
+	
+	public void worldObjectView(WorldObject wo, Canvas canvas) {
+		Paint paint = new Paint();
+		paint.setColor(Color.rgb(wo.getRed(), wo.getGreen(), wo.getBlue()));
+		
+		int x = wo.getX() - (getAvatar().getX() - getWorld().worldVisibleSizeX / 2);
+		int y = wo.getY() - (getAvatar().getY() - getWorld().worldVisibleSizeY / 2);
+		int px = x * (canvas.getWidth() / getWorld().worldVisibleSizeX);
+		int py = y * (canvas.getHeight() / getWorld().worldVisibleSizeY);
+		
+		int psize = ((canvas.getWidth() / getWorld().worldVisibleSizeX) / 15) * wo.getSize();
+		
+		canvas.drawCircle(px, py, psize , paint);
 	}
 
 	
@@ -143,30 +174,35 @@ public class WorldView extends View {
 		int  x = (int) event.getX();
 		int y = (int) event.getY();
 		
-		if (rLeft.contains(x, y)) {
-			MyAvatar.getInstance().move(Direction.LEFT);
+		if (getAvatar()!=null) {
+			if (rLeft.contains(x, y)) {
+				getAvatar().move(Direction.LEFT);
+			}
+			if (rRight.contains(x, y)) {
+				getAvatar().move(Direction.RIGHT);
+			}
+			if (rUp.contains(x, y)) {
+				getAvatar().move(Direction.UP);
+			}
+			if (rDown.contains(x, y)) {
+				getAvatar().move(Direction.DOWN);
+			}
+			if (rAction.contains(x, y)) {
+				getAvatar().action();
+			}
 		}
-		if (rRight.contains(x, y)) {
-			MyAvatar.getInstance().move(Direction.RIGHT);
-		}
-		if (rUp.contains(x, y)) {
-			MyAvatar.getInstance().move(Direction.UP);
-		}
-		if (rDown.contains(x, y)) {
-			MyAvatar.getInstance().move(Direction.DOWN);
-		}
-		if (rAction.contains(x, y)) {
-			MyAvatar.getInstance().action();
-		}
-		
 		return super.onTouchEvent(event);
 		//return false;
 	}
 	
 	
-	
-	
-	
+	public World getWorld() {
+		return Model.getInstance().getWorld();
+	}
+	public Avatar getAvatar() {
+		return Model.getInstance().getAvatar();
+	}
+		
 	
 	
 }

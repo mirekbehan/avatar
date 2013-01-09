@@ -7,13 +7,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import cz.uhk.fim.avatar.server.SocketListener;
+import cz.uhk.fim.avatar.server.SocketSender;
+
 public class SocketClient extends Thread {
 
 	Socket socket;
 	SocketListener listener;
 	SocketSender sender;
+	
+	static SocketClient instance;
 
 	public SocketClient(String host, int port) {
+		instance = this;
 		try {
 			socket = new Socket(host, port);
 		} catch (IOException e) {
@@ -22,6 +28,8 @@ public class SocketClient extends Thread {
 		
 		sender = new SocketSender(socket);
 		listener = new SocketListener(socket);
+
+		setName(getClass().getSimpleName());
 
 	}
 	
@@ -46,8 +54,18 @@ public class SocketClient extends Thread {
 					e.printStackTrace();
 				}
 			}
+
+			// test if listener and sender works
+			if (!listener.running || !sender.running) {
+				running = false;
+
+			}
 			
 		}
+		
+		listener.running = false;
+		sender.running= false;
+		
 		
 	}
 	
@@ -71,8 +89,8 @@ public class SocketClient extends Thread {
 		executors.add(listener);
 	}
 	
-	public void send(Object obj) {
-		sender.send(obj);
+	static public void send(Object obj) {
+		if (instance!=null && instance.sender!=null) instance.sender.send(obj);
 	}
 
 	
