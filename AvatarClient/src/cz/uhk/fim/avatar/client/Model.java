@@ -15,21 +15,17 @@ public class Model {
 	}
 	
 	public Model() {
-		instance = this;
 		SocketClient.addOnReceive(new OnReceiveListener() {
 			@Override
 			public void onReceive(Object obj) {
 				if (obj instanceof World) {
 					setWorld(((World)obj));
 				}
-				if (obj instanceof WorldObject) {
-					getWorld().refreshWorldObject((WorldObject)obj);
-				}
 				if (obj instanceof Avatar) {
-					Avatar a = (Avatar)obj;
-					if (a.equals(getAvatar())) {
-						getAvatar().setX(a.getX());
-						getAvatar().setY(a.getY());
+					Avatar a= (Avatar)obj;
+					if (a.equals(avatar)) {
+						avatar.setX(a.getX());
+						avatar.setY(a.getY());
 					}
 				}
 			}
@@ -49,10 +45,8 @@ public class Model {
 	public Avatar getAvatar() {
 		return avatar;
 	}
-	public void setAvatar(Avatar value) {
-		avatar =value;
-		// setup listener
-		SocketClient.send(getAvatar().getClone());
+	public void setAvatar(Avatar avatar) {
+		this.avatar = avatar;
 	}
 
 	

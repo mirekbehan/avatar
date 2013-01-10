@@ -22,15 +22,13 @@ public class SocketClient extends Thread {
 		instance = this;
 		try {
 			socket = new Socket(host, port);
+			sender = new SocketSender(socket);
+			listener = new SocketListener(socket);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		sender = new SocketSender(socket);
-		listener = new SocketListener(socket);
 
 		setName(getClass().getSimpleName());
-
 	}
 	
 	boolean running;

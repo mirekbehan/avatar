@@ -57,6 +57,7 @@ public class MyAvatar extends Avatar {
 		} else {
 			visible = true;
 		}
+		SocketClient.send(this.getClone());
 	}
 
 	transient private Rect rPhoto;

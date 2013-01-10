@@ -19,7 +19,9 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		//Worker.go(this);
 		//new SocketClient("angelmobil.com", 9999).start();
-		new SocketClient("10.0.0.1", 9999).start();
+		//new SocketClient("10.0.0.1", 9999).start();
+		new SocketClient("192.168.1.7", 9999).start();
+		
 		
 		Bitmap bmp = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -28,8 +30,9 @@ public class MainActivity extends Activity {
 		
 		MyAvatar avatar = new MyAvatar();
 		avatar.setImageData(byteArray);
+		Model.getInstance().setAvatar(avatar);
+		SocketClient.send(avatar.getClone());
 
-		new Model().setAvatar(avatar);
 		
 	}
 
