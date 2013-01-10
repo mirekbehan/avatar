@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import cz.uhk.fim.avatar.server.SocketListener;
-import cz.uhk.fim.avatar.server.SocketSender;
+import cz.uhk.fim.avatar.client.socket.SocketListener;
+import cz.uhk.fim.avatar.client.socket.SocketSender;
 
 public class SocketClient extends Thread {
 
